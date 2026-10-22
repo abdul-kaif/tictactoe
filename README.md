@@ -4,7 +4,7 @@ A fun, interactive Tic-Tac-Toe game built with HTML, CSS, and JavaScript. Play a
 
 ## 🌐 Live Demo
 
-**Play the game online:** https://tic-tac-toe998.netlify.app/
+**Play the game online:** https://tic-tac-toe-kaif-game.netlify.app/
 
 ## ✨ Features
 
