@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10131f">
+  <title>Tic Tac Toe</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #10131f;
+      color: #f4f5fb;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --muted: #8d93a8;
+      --panel: #191d2c;
+      --line: #292e40;
+      --cyan: #70e1e8;
+      --pink: #ff83a8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 28px 18px;
+      background:
+        radial-gradient(ellipse at 12% 10%, #292448 0, transparent 38%),
+        radial-gradient(ellipse at 90% 90%, #15343d 0, transparent 34%),
+        #10131f;
+    }
+
+    button { font: inherit; }
+
+    .game {
+      width: min(100%, 440px);
+      padding: 32px;
+      border: 1px solid #ffffff12;
+      border-radius: 28px;
+      background: #191d2ceF;
+      box-shadow: 0 28px 90px #0007;
+    }
+
+    header { text-align: center; }
+
+    .eyebrow {
+      margin: 0 0 9px;
+      color: var(--cyan);
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 8vw, 2.7rem);
+      letter-spacing: -.06em;
+    }
+
+    .subtitle {
+      margin: 8px 0 26px;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .mode-picker {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      margin-bottom: 20px;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: #121622;
+    }
+
+    .mode-option {
+      min-height: 42px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .85rem;
+      font-weight: 700;
+    }
+
+    .mode-option[aria-pressed="true"] {
+      background: #2a3044;
+      color: #f4f5fb;
+    }
+
+    .scoreboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .score {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: #121622;
+      text-align: center;
+    }
+
+    .score-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 650;
+    }
+
+    .score-mark { font-size: .95rem; font-weight: 900; }
+    .score:first-child .score-mark { color: var(--cyan); }
+    .score:nth-child(2) .score-mark { color: var(--pink); }
+    .score-value { display: block; margin-top: 3px; font-size: 1.45rem; font-weight: 800; }
+
+    .status {
+      min-height: 26px;
+      margin: 0 0 16px;
+      color: #dfe2ef;
+      font-size: .95rem;
+      font-weight: 650;
+      text-align: center;
+    }
+
+    .status .x { color: var(--cyan); }
+    .status .o { color: var(--pink); }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      aspect-ratio: 1;
+    }
+
+    .cell {
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      border: 1px solid #ffffff0d;
+      border-radius: 18px;
+      background: #222738;
+      color: #f4f5fb;
+      cursor: pointer;
+      font-size: clamp(3rem, 16vw, 4.7rem);
+      font-weight: 750;
+      line-height: 1;
+      transition: background .16s ease, transform .16s ease, border-color .16s ease;
+    }
+
+    .cell:not(:disabled):hover {
+      transform: translateY(-2px);
+      border-color: #70e1e866;
+      background: #2a3044;
+    }
+
+    .cell:focus-visible, .control:focus-visible, .mode-option:focus-visible {
+      outline: 3px solid #fff;
+      outline-offset: 3px;
+    }
+
+    .cell.x { color: var(--cyan); }
+    .cell.o { color: var(--pink); }
+    .cell.winner { background: #31404a; border-color: var(--cyan); }
+    .cell:disabled { cursor: default; }
+
+    .controls { display: flex; gap: 10px; margin-top: 20px; }
+
+    .control {
+      min-height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background .15s ease, border-color .15s ease;
+    }
+
+    .control.primary {
+      flex: 1;
+      border-color: transparent;
+      background: var(--cyan);
+      color: #10131f;
+    }
+
+    .control.primary:hover { background: #91edf1; }
+    .control.secondary { padding: 0 15px; background: transparent; color: #c2c7d6; }
+    .control.secondary:hover { border-color: #596078; background: #222738; }
+
+    @media (max-width: 420px) {
+      .game { padding: 24px 19px; border-radius: 23px; }
+      .board { gap: 8px; }
+      .cell { border-radius: 15px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="game" aria-labelledby="game-title">
+    <header>
+      <p class="eyebrow">The classic game</p>
+      <h1 id="game-title">Tic Tac Toe</h1>
+      <p class="subtitle">A little friendly competition.</p>
+    </header>
+
+    <div class="mode-picker" role="group" aria-label="Choose game mode">
+      <button class="mode-option" type="button" data-mode="computer" aria-pressed="true">Play vs Computer</button>
+      <button class="mode-option" type="button" data-mode="players" aria-pressed="false">Two Players</button>
+    </div>
+
+    <section class="scoreboard" aria-label="Score">
+      <div class="score">
+        <span class="score-label"><span class="score-mark" aria-hidden="true">X</span> Player X</span>
+        <span class="score-value" id="score-x">0</span>
+      </div>
+      <div class="score">
+        <span class="score-label"><span class="score-mark" aria-hidden="true">O</span><span id="opponent-label">Computer</span></span>
+        <span class="score-value" id="score-o">0</span>
+      </div>
+    </section>
+
+    <p class="status" id="status" role="status" aria-live="polite">Player <span class="x">X</span>'s turn</p>
+    <div class="board" role="group" aria-label="Tic Tac Toe board">
+      <button class="cell" type="button" data-cell="0" aria-label="Row 1, column 1, empty"></button>
+      <button class="cell" type="button" data-cell="1" aria-label="Row 1, column 2, empty"></button>
+      <button class="cell" type="button" data-cell="2" aria-label="Row 1, column 3, empty"></button>
+      <button class="cell" type="button" data-cell="3" aria-label="Row 2, column 1, empty"></button>
+      <button class="cell" type="button" data-cell="4" aria-label="Row 2, column 2, empty"></button>
+      <button class="cell" type="button" data-cell="5" aria-label="Row 2, column 3, empty"></button>
+      <button class="cell" type="button" data-cell="6" aria-label="Row 3, column 1, empty"></button>
+      <button class="cell" type="button" data-cell="7" aria-label="Row 3, column 2, empty"></button>
+      <button class="cell" type="button" data-cell="8" aria-label="Row 3, column 3, empty"></button>
+    </div>
+
+    <div class="controls">
+      <button class="control primary" id="new-round" type="button">New round</button>
+      <button class="control secondary" id="reset-score" type="button">Reset score</button>
+    </div>
+  </main>
+
+  <script>
+    const cells = [...document.querySelectorAll("[data-cell]")];
+    const status = document.querySelector("#status");
+    const scoreX = document.querySelector("#score-x");
+    const scoreO = document.querySelector("#score-o");
+    const opponentLabel = document.querySelector("#opponent-label");
+    const winningLines = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+
+    let board = Array(9).fill("");
+    let currentPlayer = "X";
+    let scores = { X: 0, O: 0 };
+    let roundOver = false;
+    let mode = "computer";
+    let computerTimer;
+
+    function setTurnStatus() {
+      if (mode === "computer" && currentPlayer === "O") {
+        status.textContent = "Computer is thinking…";
+      } else {
+        const className = currentPlayer === "X" ? "x" : "o";
+        status.innerHTML = `Player <span class="${className}">${currentPlayer}</span>'s turn`;
+      }
+    }
+
+    function updateBoardInteractivity() {
+      cells.forEach((cell, index) => {
+        cell.disabled = roundOver || board[index] !== "" || (mode === "computer" && currentPlayer === "O");
+      });
+    }
+
+    function checkWinner(player) {
+      return winningLines.find(line => line.every(position => board[position] === player));
+    }
+
+    function computerMove() {
+      function scorePosition(player, depth) {
+        if (checkWinner("O")) return 10 - depth;
+        if (checkWinner("X")) return depth - 10;
+        if (board.every(Boolean)) return 0;
+
+        const isComputerTurn = player === "O";
+        let bestScore = isComputerTurn ? -Infinity : Infinity;
+        for (let index = 0; index < board.length; index++) {
+          if (board[index]) continue;
+          board[index] = player;
+          const score = scorePosition(isComputerTurn ? "X" : "O", depth + 1);
+          board[index] = "";
+          bestScore = isComputerTurn ? Math.max(bestScore, score) : Math.min(bestScore, score);
+        }
+        return bestScore;
+      }
+
+      let bestScore = -Infinity;
+      let bestMoves = [];
+      for (let index = 0; index < board.length; index++) {
+        if (board[index]) continue;
+        board[index] = "O";
+        const score = scorePosition("X", 0);
+        board[index] = "";
+        if (score > bestScore) {
+          bestScore = score;
+          bestMoves = [index];
+        } else if (score === bestScore) {
+          bestMoves.push(index);
+        }
+      }
+      return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+    }
+
+    function startRound() {
+      clearTimeout(computerTimer);
+      board = Array(9).fill("");
+      currentPlayer = "X";
+      roundOver = false;
+      cells.forEach((cell, index) => {
+        cell.textContent = "";
+        cell.className = "cell";
+        cell.setAttribute("aria-label", `Row ${Math.floor(index / 3) + 1}, column ${index % 3 + 1}, empty`);
+      });
+      updateBoardInteractivity();
+      setTurnStatus();
+    }
+
+    function finishRound(winnerLine) {
+      roundOver = true;
+      clearTimeout(computerTimer);
+      updateBoardInteractivity();
+
+      if (winnerLine) {
+        winnerLine.forEach(index => cells[index].classList.add("winner"));
+        scores[currentPlayer]++;
+        (currentPlayer === "X" ? scoreX : scoreO).textContent = scores[currentPlayer];
+        if (mode === "computer" && currentPlayer === "O") {
+          status.textContent = "Computer wins!";
+        } else {
+          status.innerHTML = `Player <span class="${currentPlayer === "X" ? "x" : "o"}">${currentPlayer}</span> wins!`;
+        }
+      } else {
+        status.textContent = "It's a draw!";
+      }
+    }
+
+    function play(index, isComputerMove = false) {
+      if (roundOver || board[index] || (mode === "computer" && currentPlayer === "O" && !isComputerMove)) return;
+
+      board[index] = currentPlayer;
+      const cell = cells[index];
+      cell.textContent = currentPlayer;
+      cell.classList.add(currentPlayer.toLowerCase());
+      cell.disabled = true;
+      cell.setAttribute("aria-label", `Row ${Math.floor(index / 3) + 1}, column ${index % 3 + 1}, ${currentPlayer}`);
+
+      const winnerLine = checkWinner(currentPlayer);
+      if (winnerLine || board.every(Boolean)) {
+        finishRound(winnerLine);
+        return;
+      }
+
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      updateBoardInteractivity();
+      setTurnStatus();
+      if (mode === "computer" && currentPlayer === "O") {
+        computerTimer = setTimeout(() => play(computerMove(), true), 350);
+      }
+    }
+
+    cells.forEach((cell, index) => cell.addEventListener("click", () => play(index)));
+    document.querySelector("#new-round").addEventListener("click", startRound);
+    document.querySelectorAll("[data-mode]").forEach(button => {
+      button.addEventListener("click", () => {
+        if (mode === button.dataset.mode) return;
+        mode = button.dataset.mode;
+        document.querySelectorAll("[data-mode]").forEach(option => {
+          option.setAttribute("aria-pressed", String(option === button));
+        });
+        opponentLabel.textContent = mode === "computer" ? "Computer" : "Player O";
+        scores = { X: 0, O: 0 };
+        scoreX.textContent = "0";
+        scoreO.textContent = "0";
+        startRound();
+      });
+    });
+    document.querySelector("#reset-score").addEventListener("click", () => {
+      scores = { X: 0, O: 0 };
+      scoreX.textContent = "0";
+      scoreO.textContent = "0";
+      startRound();
+    });
+  </script>
+</body>
+</html>
